@@ -3,33 +3,33 @@ services:
   traefik:
     image: docker.io/traefik:latest
     container_name: traefik
-    restart: always
-    ports:
-      - '80:80'
-      - '443:443/tcp'
-    labels:
-      traefik.enable: true
-      traefik.http.routers.dashboard.rule: Host(`traefik.hs.sunao1222.net`)
-      traefik.http.routers.dashboard.entrypoints: websecure
-      traefik.http.routers.dashboard.service: api@internal
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /run/user/${UID}/podman/podman.sock:/var/run/docker.sock:ro
       - ./traefik/traefik.yml:/traefik.yml:ro
       - ./traefik/acme.json:/acme.json
+    ports:
+      - '80:80'
+      - '443:443/tcp'
     networks:
       - frontend
+    restart: always
+    labels:
+      traefik.enable: true
+      traefik.http.routers.dashboard.rule: Host(`traefik.hs.sunao1222.net`)
+      traefik.http.routers.dashboard.entrypoints: websecure
+      traefik.http.routers.dashboard.service: api@internal
 
   whoami:
     image: docker.io/traefik/whoami:latest
     container_name: whoami
+    networks:
+      - frontend
+    restart: always
     labels:
       traefik.enable: true
       traefik.http.routers.whoami.rule: Host(`whoami.hs.sunao1222.net`)
       traefik.http.routers.whoami.entrypoints: websecure
-    restert: always
-    networks:
-      - frontend
 
 networks:
   frontend:
