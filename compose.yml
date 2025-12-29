@@ -11,6 +11,12 @@ services:
     ports:
       - '80:80'
       - '443:443/tcp'
+    secrets:
+      - cf_dns_api_token
+      - cf_zone_api_token
+    environment:
+      - CF_DNS_API_TOKEN_FILE=/run/secrets/cf_dns_api_token
+      - CF_ZONE_API_TOKEN_FILE=/run/secrets/cf_zone_api_token
     networks:
       - frontend
     restart: always
@@ -34,3 +40,9 @@ services:
 networks:
   frontend:
     external: true
+
+secrets:
+  cf_dns_api_token:
+    file: ./.secrets/cf_dns_api_token.txt
+  cf_zone_api_token:
+    file: ./.secrets/cf_zone_api_token.txt
