@@ -4,8 +4,12 @@ services:
     image: 'docker.io/authelia/authelia:latest'
     container_name: 'authelia'
     volumes:
-      - './authelia/config:/config'
-      - './authelia/logs:/var/log/authelia'
+      - ./authelia/config:/config
+      - ./authelia/logs:/var/log/authelia
+    secrets:
+      - 'authelia_identity_validation_reset_password_jwt_secret'
+      - 'authelia_session_secret'
+      - 'authelia_storage_encryption_key'
     environment:
       TZ: '${TZ}'
       AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE: '/run/secrets/authelia_identity_validation_reset_password_jwt_secret'
@@ -22,19 +26,15 @@ services:
       traefik.http.middlewares.authelia.forwardauth.trustForwardHeader: 'true'
       traefik.http.middlewares.authelia.forwardauth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Name,Remote-Email'
       traefik.docker.network: 'frontend'
-    secrets:
-      - 'authelia_identity_validation_reset_password_jwt_secret'
-      - 'authelia_session_secret'
-      - 'authelia_storage_encryption_key'
 
   traefik:
     image: 'docker.io/traefik:latest'
     container_name: 'traefik'
     volumes:
-      - '/run/user/${UID}/podman/podman.sock:/var/run/docker.sock:ro'
-      - './traefik/config/traefik.yml:/traefik.yml:ro'
-      - './traefik/data:/data'
-      - './traefik/logs:/logs'
+      - /run/user/${UID}/podman/podman.sock:/var/run/docker.sock:ro
+      - ./traefik/config/traefik.yml:/traefik.yml:ro
+      - ./traefik/data:/data
+      - ./traefik/logs:/logs
     secrets:
       - 'cf_dns_api_token'
       - 'cf_zone_api_token'
