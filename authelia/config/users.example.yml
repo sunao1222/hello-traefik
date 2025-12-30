@@ -2,7 +2,7 @@ users:
   example:
     disabled: false
     displayname: 'example'
-    password:
+    password: 'example'
     email: 'your@domain.com'
     groups:
       - 'admins'

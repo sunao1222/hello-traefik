@@ -1,61 +1,71 @@
-name: test-traefik
+name: 'test-traefik'
 services:
   authelia:
-    image: docker.io/authelia:latest
-    container_name: authelia
+    image: 'docker.io/authelia/authelia:latest'
+    container_name: 'authelia'
     volumes:
-      - ./authelia:/config
+      - './authelia/config:/config'
+      - './authelia/logs:/var/log/authelia'
     environment:
-      TZ: Asia/Tokyo
+      TZ: '${TZ}'
+      AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE: '/run/secrets/authelia_identity_validation_reset_password_jwt_secret'
+      AUTHELIA_SESSION_SECRET_FILE: '/run/secrets/authelia_session_secret'
+      AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE: '/run/secrets/authelia_storage_encryption_key'
     networks:
-      - frontend
-    restart: always
+      - 'frontend'
+    restart: 'always'
     labels:
-      traefik.enable: true
-      traefik.http.routers.authelia.rule: Host(`auth.hs.sunao1222.net`)
-      traefik.http.routers.authelia.entrypoints: websecure
-      traefik.http.routers.authelia.tls: true
-      traefik.http.routers.authelia.tls.option: default
-      traefik.http.middlewares.authelia.forwardauth.address: http://authelia:9091/api/authz/forward-auth
-      traefik.http.middlewares.authelia.forwardauth.trustForwardHeader: true
-      traefik.http.middlewares.authelia.forwardauth.authResponseHeaders: Remote-User,Remote-Groups,Remote-Name,Remote-Email
+      traefik.enable: 'true'
+      traefik.http.routers.authelia.rule: 'Host(`auth.hs.sunao1222.net`)'
+      traefik.http.routers.authelia.entrypoints: 'websecure'
+      traefik.http.middlewares.authelia.forwardauth.address: 'http://authelia:9091/api/authz/forward-auth'
+      traefik.http.middlewares.authelia.forwardauth.trustForwardHeader: 'true'
+      traefik.http.middlewares.authelia.forwardauth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Name,Remote-Email'
+      traefik.docker.network: 'frontend'
+    secrets:
+      - 'authelia_identity_validation_reset_password_jwt_secret'
+      - 'authelia_session_secret'
+      - 'authelia_storage_encryption_key'
 
   traefik:
-    image: docker.io/traefik:latest
-    container_name: traefik
+    image: 'docker.io/traefik:latest'
+    container_name: 'traefik'
     volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /run/user/${UID}/podman/podman.sock:/var/run/docker.sock:ro
-      - ./traefik/traefik.yml:/traefik.yml:ro
-      - ./traefik/acme.json:/acme.json
+      - '/run/user/${UID}/podman/podman.sock:/var/run/docker.sock:ro'
+      - './traefik/config/traefik.yml:/traefik.yml:ro'
+      - './traefik/data:/data'
+      - './traefik/logs:/logs'
     secrets:
-      - cf_dns_api_token
-      - cf_zone_api_token
+      - 'cf_dns_api_token'
+      - 'cf_zone_api_token'
     environment:
-      - CF_DNS_API_TOKEN_FILE=/run/secrets/cf_dns_api_token
-      - CF_ZONE_API_TOKEN_FILE=/run/secrets/cf_zone_api_token
+      TZ: '${TZ}'
+      CF_DNS_API_TOKEN_FILE: '/run/secrets/cf_dns_api_token'
+      CF_ZONE_API_TOKEN_FILE: '/run/secrets/cf_zone_api_token'
     ports:
       - '80:80'
       - '443:443/tcp'
     networks:
-      - frontend
-    restart: always
+      - 'frontend'
+    restart: 'always'
     labels:
-      traefik.enable: true
-      traefik.http.routers.dashboard.rule: Host(`traefik.hs.sunao1222.net`)
-      traefik.http.routers.dashboard.entrypoints: websecure
-      traefik.http.routers.dashboard.service: api@internal
+      traefik.enable: 'true'
+      traefik.http.routers.dashboard.rule: 'Host(`traefik.hs.sunao1222.net`)'
+      traefik.http.routers.dashboard.entrypoints: 'websecure'
+      traefik.http.routers.dashboard.service: 'api@internal'
+      traefik.http.routers.dashboard.middlewares: 'authelia@docker'
 
   whoami:
-    image: docker.io/traefik/whoami:latest
-    container_name: whoami
+    image: 'docker.io/traefik/whoami:latest'
+    container_name: 'whoami'
     networks:
-      - frontend
-    restart: always
+      - 'frontend'
+    restart: 'always'
     labels:
-      traefik.enable: true
-      traefik.http.routers.whoami.rule: Host(`whoami.hs.sunao1222.net`)
-      traefik.http.routers.whoami.entrypoints: websecure
+      traefik.enable: 'true'
+      traefik.http.routers.whoami.rule: 'Host(`whoami.hs.sunao1222.net`)'
+      traefik.http.routers.whoami.entrypoints: 'websecure'
+      traefik.http.routers.whoami.middlewares: 'authelia@docker'
 
 networks:
   frontend:
@@ -63,6 +73,12 @@ networks:
 
 secrets:
   cf_dns_api_token:
-    file: ./.secrets/cf_dns_api_token.txt
+    file: './.secrets/cf_dns_api_token'
   cf_zone_api_token:
-    file: ./.secrets/cf_zone_api_token.txt
+    file: './.secrets/cf_zone_api_token'
+  authelia_identity_validation_reset_password_jwt_secret:
+    file: './.secrets/authelia_identity_validation_reset_password_jwt_secret'
+  authelia_session_secret:
+    file: './.secrets/authelia_session_secret'
+  authelia_storage_encryption_key:
+    file: './.secrets/authelia_storage_encryption_key'
