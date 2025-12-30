@@ -8,15 +8,15 @@ services:
       - /run/user/${UID}/podman/podman.sock:/var/run/docker.sock:ro
       - ./traefik/traefik.yml:/traefik.yml:ro
       - ./traefik/acme.json:/acme.json
-    ports:
-      - '80:80'
-      - '443:443/tcp'
     secrets:
       - cf_dns_api_token
       - cf_zone_api_token
     environment:
       - CF_DNS_API_TOKEN_FILE=/run/secrets/cf_dns_api_token
       - CF_ZONE_API_TOKEN_FILE=/run/secrets/cf_zone_api_token
+    ports:
+      - '80:80'
+      - '443:443/tcp'
     networks:
       - frontend
     restart: always
