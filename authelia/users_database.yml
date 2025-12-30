@@ -1,0 +1,9 @@
+users:
+  example:
+    disabled: false
+    displayname: 'example'
+    password:
+    email: 'your@domain.com'
+    groups:
+      - 'admins'
+      - 'dev'

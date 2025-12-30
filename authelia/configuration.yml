@@ -1,0 +1,39 @@
+theme: "dark"
+
+server:
+  address: 'tcp://:9091'
+
+authentication_backend:
+  file:
+    path: '/config/users_database.yml'
+
+access_control:
+  default_policy: 'deny'
+  rules:
+    - domain: 'traefik.hs.sunao1222.net'
+      policy: 'bypass'
+    - domain: 'auth.hs.sunao1222.net'
+      policy: 'one_factor'
+
+session:
+  secret: 'insecure_session_secret'
+  cookies:
+    - name: 'authelia_session'
+      domain: 'hs.sunao1222.net'
+      authelia_url: 'https://auth.hs.sunao1222.net'
+      expiration: 3600
+      inactivity: 1800
+      default_redirection_url: 'https://traefik.hs.sunao1222.net'
+
+reguration:
+  max_retries: 3
+  find_time: 120
+  ban_time: 300
+
+storage:
+  local:
+    path: /config/db.sqlite3
+
+notifier:
+  filesystem:
+    filename: /config/notification.txt

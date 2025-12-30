@@ -1,5 +1,25 @@
 name: test-traefik
 services:
+  authelia:
+    image: docker.io/authelia:latest
+    container_name: authelia
+    volumes:
+      - ./authelia:/config
+    environment:
+      TZ: Asia/Tokyo
+    networks:
+      - frontend
+    restart: always
+    labels:
+      traefik.enable: true
+      traefik.http.routers.authelia.rule: Host(`auth.hs.sunao1222.net`)
+      traefik.http.routers.authelia.entrypoints: websecure
+      traefik.http.routers.authelia.tls: true
+      traefik.http.routers.authelia.tls.option: default
+      traefik.http.middlewares.authelia.forwardauth.address: http://authelia:9091/api/authz/forward-auth
+      traefik.http.middlewares.authelia.forwardauth.trustForwardHeader: true
+      traefik.http.middlewares.authelia.forwardauth.authResponseHeaders: Remote-User,Remote-Groups,Remote-Name,Remote-Email
+
   traefik:
     image: docker.io/traefik:latest
     container_name: traefik
